@@ -1,0 +1,25 @@
+TAE-1 FACULTY DEMO SCRIPT – CM24119
+
+Goal: demonstrate the modular TM transformation w -> w B w.
+
+1. Open index.html in Chrome/Edge.
+2. Start with valid input: 1011.
+3. Press Step once or twice and point out:
+   - current state,
+   - current head position,
+   - read/write symbols,
+   - L/R movement in the trace.
+4. Press Run and explain the modules:
+   INIT -> creates B separator;
+   COPY_SUBROUTINE -> marks 0 as X / 1 as Y and appends the copied symbol;
+   RETURN -> moves left to restart the source scan;
+   CLEANUP -> restores X/Y and halts.
+5. Let the machine finish. Show final result 1011 B 1011 and PASS.
+6. Test leading zeros with 00101 and show they are preserved.
+7. Test an invalid input such as 102. Explain that the UI rejects it because the selected input alphabet is {0,1}.
+8. For viva, remember:
+   - one-tape TM is enough because the machine needs read/write tape and bidirectional movement;
+   - X/Y are temporary markers;
+   - B is the separator;
+   - full one-tape simulation is O(n^2) in the worst case;
+   - final verification compares the useful tape with w B w.

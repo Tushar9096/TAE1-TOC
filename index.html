@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Modular Turing Machine — Copy String Subroutine</title>
+<style>
+  :root{
+    --ink:#0f172a; --muted:#64748b; --border:#dbe3ee; --panel:#ffffff;
+    --bg:#f4f7fb; --accent:#0f766e; --accent2:#115e59; --danger:#b42318;
+    --ok:#137333; --blue:#1d4ed8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(135deg,#f8fafc,#eef3f8);font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink)}
+  .wrap{max-width:1250px;margin:0 auto;padding:28px}
+  header{background:#fff;border:1px solid var(--border);border-radius:18px;padding:22px 24px;box-shadow:0 10px 30px rgba(15,23,42,.06)}
+  .eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--accent);text-transform:uppercase}
+  h1{margin:6px 0 8px;font-size:30px;line-height:1.15}
+  .subtitle{margin:0;color:var(--muted);font-size:15px;line-height:1.5}
+  .grid{display:grid;grid-template-columns:360px 1fr;gap:18px;margin-top:18px}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.05)}
+  .section-title{font-size:14px;font-weight:800;margin:0 0 12px}
+  label{display:block;font-size:12px;font-weight:700;color:#334155;margin:0 0 6px}
+  input[type=text], input[type=number]{width:100%;padding:11px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:15px;outline:none}
+  input[type=text]:focus,input[type=number]:focus{border-color:#0f766e;box-shadow:0 0 0 3px rgba(15,118,110,.12)}
+  .row{display:flex;gap:8px;align-items:center}.row>*{flex:1}
+  button{border:0;border-radius:10px;padding:10px 12px;font-weight:800;cursor:pointer;font-size:13px}
+  .primary{background:#0f766e;color:#fff}.secondary{background:#e2e8f0;color:#0f172a}.ghost{background:#f8fafc;border:1px solid var(--border)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .hint{font-size:11px;color:var(--muted);margin-top:7px;line-height:1.4}
+  .metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}
+  .metric{padding:11px;border:1px solid var(--border);border-radius:12px;background:#fbfdff}.metric .k{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}.metric .v{font-size:16px;font-weight:900;margin-top:3px}
+  .status{padding:10px 12px;border-radius:10px;margin-top:12px;font-weight:800;font-size:13px;border:1px solid transparent}.status.ok{background:#ecfdf3;color:#137333;border-color:#bbf7d0}.status.bad{background:#fff1f2;color:#b42318;border-color:#fecdd3}.status.info{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+  .tape-wrap{overflow-x:auto;padding-bottom:6px}.tape{display:flex;gap:6px;min-width:max-content;padding:18px 3px 6px}
+  .cell{position:relative;width:54px;height:54px;border:2px solid #cbd5e1;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:900}
+  .cell.read{border-color:#0f766e;background:#f0fdfa}.cell.head::after{content:'HEAD';position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:9px;color:#0f766e;font-weight:900;letter-spacing:.08em}
+  .cell.source{background:#fff7ed;border-color:#fdba74}.cell.marker{background:#eff6ff;border-color:#93c5fd}.cell.blank{color:#94a3b8}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:9px;font-size:11px;color:#475569}.legend span{display:inline-flex;align-items:center;gap:5px}.dot{width:10px;height:10px;border-radius:3px;border:1px solid #cbd5e1;background:#fff}.dot.a{background:#f0fdfa;border-color:#0f766e}.dot.b{background:#fff7ed;border-color:#fdba74}.dot.c{background:#eff6ff;border-color:#93c5fd}
+  .table-wrap{max-height:330px;overflow:auto;border:1px solid var(--border);border-radius:12px}.trace{width:100%;border-collapse:collapse;font-size:11px}.trace th{position:sticky;top:0;background:#f8fafc;padding:9px;border-bottom:1px solid var(--border);text-align:left}.trace td{padding:8px;border-bottom:1px solid #eef2f7;vertical-align:top}.trace tr.current{background:#ecfdf3}
+  .module-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.module{border:1px solid var(--border);border-radius:12px;padding:12px}.module b{display:block;font-size:12px;margin-bottom:5px}.module p{margin:0;font-size:11px;color:#475569;line-height:1.45}
+  .footer{margin-top:18px;text-align:center;color:#64748b;font-size:11px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}.metric-grid{grid-template-columns:repeat(2,1fr)}.module-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">TAE-1 • Project Based Learning • Theory of Computation</div>
+  <h1>Modular Turing Machine: Copy String Subroutine</h1>
+  <p class="subtitle">Simulate a one-tape TM that transforms <b>w</b> into <b>w B w</b>, where <b>B</b> is the blank separator. The simulator exposes state transitions, tape contents and head direction dynamically.</p>
+</header>
+
+<div class="grid">
+  <aside class="panel">
+    <h2 class="section-title">1. Input & Controls</h2>
+    <label for="input">Binary input string w</label>
+    <input id="input" type="text" value="1011" maxlength="24" autocomplete="off" />
+    <div class="hint">Valid alphabet: {0,1}. Use a non-empty string. Example: 1011 → 1011 B 1011.</div>
+
+    <div class="row" style="margin-top:12px">
+      <button class="ghost" data-sample="1011">1011</button>
+      <button class="ghost" data-sample="00101">00101</button>
+      <button class="ghost" data-sample="11010">11010</button>
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <button id="reset" class="secondary">Reset</button>
+      <button id="step" class="secondary">Step</button>
+      <button id="run" class="primary">Run</button>
+      <button id="pause" class="ghost">Pause</button>
+    </div>
+
+    <div style="margin-top:14px">
+      <label for="delay">Auto-step delay (ms)</label>
+      <input id="delay" type="number" min="50" max="2000" step="50" value="350" />
+    </div>
+
+    <div id="status" class="status info">Ready. Enter a binary string and press Run.</div>
+
+    <div class="metric-grid">
+      <div class="metric"><div class="k">Step</div><div id="mStep" class="v">0</div></div>
+      <div class="metric"><div class="k">State</div><div id="mState" class="v">qStart</div></div>
+      <div class="metric"><div class="k">Head</div><div id="mHead" class="v">0</div></div>
+      <div class="metric"><div class="k">Read</div><div id="mRead" class="v">—</div></div>
+      <div class="metric"><div class="k">Write</div><div id="mWrite" class="v">—</div></div>
+      <div class="metric"><div class="k">Move</div><div id="mMove" class="v">—</div></div>
+    </div>
+  </aside>
+
+  <main>
+    <section class="panel">
+      <h2 class="section-title">2. Dynamic Tape & Head Direction</h2>
+      <div id="tapeWrap" class="tape-wrap"><div id="tape" class="tape"></div></div>
+      <div class="legend">
+        <span><i class="dot a"></i> head/read cell</span>
+        <span><i class="dot b"></i> original input area</span>
+        <span><i class="dot c"></i> temporary mark / copied area</span>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top:18px">
+      <h2 class="section-title">3. Modular TM Logic</h2>
+      <div class="module-grid">
+        <div class="module"><b>INIT</b><p>Move to the input end and write B as the separator.</p></div>
+        <div class="module"><b>COPY_SUBROUTINE</b><p>Mark the next source symbol (X/Y), travel to the right end, and append the saved symbol.</p></div>
+        <div class="module"><b>RETURN</b><p>Move left to the tape boundary, then restart the source scan.</p></div>
+        <div class="module"><b>CLEANUP / HALT</b><p>Convert X→0 and Y→1. Accept when the tape is w B w.</p></div>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top:18px">
+      <h2 class="section-title">4. Transition Trace</h2>
+      <div class="table-wrap">
+        <table class="trace">
+          <thead><tr><th>#</th><th>State</th><th>Read</th><th>Write</th><th>Head</th><th>Direction</th><th>Reason</th></tr></thead>
+          <tbody id="traceBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top:18px">
+      <h2 class="section-title">5. Final Result</h2>
+      <div id="result" style="font-size:14px;line-height:1.7;color:#334155">No completed run yet.</div>
+    </section>
+  </main>
+</div>
+<div class="footer">S. B. Jain Institute of Technology, Management & Research, Nagpur • Individual TAE-1 Demonstration</div>
+</div>
+
+<script src="tm_core.js"></script>
+<script>
+(() => {
+  const inputEl = document.getElementById('input');
+  const delayEl = document.getElementById('delay');
+  const tapeEl = document.getElementById('tape');
+  const traceBody = document.getElementById('traceBody');
+  const statusEl = document.getElementById('status');
+  const resultEl = document.getElementById('result');
+  const m = { step:document.getElementById('mStep'), state:document.getElementById('mState'), head:document.getElementById('mHead'), read:document.getElementById('mRead'), write:document.getElementById('mWrite'), move:document.getElementById('mMove') };
+  let sim = null, timer = null;
+  function validate(){ const v=TMCopy.validateInput(inputEl.value); return v.ok?v:{ok:false,msg:'Invalid input: '+v.message}; }
+  function setStatus(type,msg){statusEl.className='status '+type; statusEl.textContent=msg;}
+  function render(){
+    if(!sim) return;
+    tapeEl.innerHTML='';
+    sim.tape.forEach((ch,i)=>{const d=document.createElement('div');d.className='cell '+(i===sim.head?'head read ':'')+(i>=1&&i<=sim.input.length?'source ':'')+((ch==='X'||ch==='Y')?'marker ':'')+(ch===TMCopy.BLANK?'blank ':'');d.textContent=ch;tapeEl.appendChild(d);});
+    const last=sim.trace[sim.trace.length-1];
+    m.step.textContent=sim.step; m.state.textContent=sim.state; m.head.textContent=sim.head; m.read.textContent=last?last.read:'—'; m.write.textContent=last?last.write:'—'; m.move.textContent=last?last.move:'—';
+    traceBody.innerHTML='';
+    sim.trace.slice(-70).forEach((r,idx)=>{const tr=document.createElement('tr');if(idx===sim.trace.slice(-70).length-1)tr.className='current';tr.innerHTML=`<td>${r.step}</td><td>${r.state}</td><td>${r.read}</td><td>${r.write}</td><td>${r.head}</td><td><b>${r.move}</b></td><td>${r.reason}</td>`;traceBody.appendChild(tr);});
+    traceBody.parentElement.scrollTop=traceBody.parentElement.scrollHeight;
+  }
+  function start(){
+    stop(); const v=validate();
+    if(!v.ok){sim=null;tapeEl.innerHTML='';traceBody.innerHTML='';setStatus('bad',v.msg);resultEl.textContent='No simulation created.';return;}
+    sim=TMCopy.createSimulator(v.value); render(); setStatus('info',`Valid input accepted. Machine initialized for w = ${v.value}.`); resultEl.innerHTML=`<b>Input:</b> ${v.value}<br><b>Expected form:</b> ${v.value} B ${v.value}<br><b>Status:</b> Ready to execute.`;
+  }
+  function oneStep(){
+    if(!sim) start(); if(!sim||sim.halted) return; const r=sim.tick(); render();
+    if(r.done){stop(); const pass=sim.verify(); setStatus(pass?'ok':'bad',pass?'Accepted: copy-string subroutine completed successfully.':'Simulation halted with an unexpected tape.'); resultEl.innerHTML=`<b>Input w:</b> ${sim.input}<br><b>Final tape:</b> ${sim.getOutput().replaceAll('B',' B ')}<br><b>Target w B w:</b> ${(sim.input+'B'+sim.input).replaceAll('B',' B ')}<br><b>Verification:</b> ${pass?'PASS — output matches w B w.':'CHECK — output does not match the expected form.'}<br><b>Total TM actions:</b> ${sim.step}`;}
+  }
+  function run(){ if(!sim) start(); if(!sim||sim.halted||timer) return; setStatus('info','Running TM step-by-step... head direction is updated after every transition.'); timer=setInterval(()=>{if(!sim||sim.halted){stop();return;}oneStep();},Math.max(50,Number(delayEl.value)||350)); }
+  function stop(){if(timer){clearInterval(timer);timer=null;}}
+  document.getElementById('reset').addEventListener('click',start);
+  document.getElementById('step').addEventListener('click',oneStep);
+  document.getElementById('run').addEventListener('click',run);
+  document.getElementById('pause').addEventListener('click',()=>{stop();if(sim&&!sim.halted)setStatus('info','Paused. Press Step or Run to continue.');});
+  inputEl.addEventListener('change',start);
+  document.querySelectorAll('[data-sample]').forEach(b=>b.addEventListener('click',()=>{inputEl.value=b.dataset.sample;start();}));
+  start();
+})();
+</script>
+</body>
+</html>
